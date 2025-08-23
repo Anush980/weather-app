@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/onboarding/onboarding.dart';
 import "theme/app_theme.dart"; 
+import 'routes/app_routes.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,8 +23,9 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(colorScheme: lightColorScheme, useMaterial3: true),
       darkTheme: ThemeData(colorScheme: darkColorScheme, useMaterial3: true),
 
-      themeMode: ThemeMode.system, 
-      home: const Onboarding(), 
+      themeMode: ThemeMode.dark ,
+      initialRoute: AppRoutes.onboarding,
+      routes: AppRoutes.routes
     );
   }
 }
