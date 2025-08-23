@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
-import "theme/color_scheme.dart"; 
+import 'screens/onboarding/onboarding.dart';
+import "theme/app_theme.dart"; 
 
 void main() {
   runApp(const MyApp());
@@ -23,8 +23,8 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(colorScheme: lightColorScheme, useMaterial3: true),
       darkTheme: ThemeData(colorScheme: darkColorScheme, useMaterial3: true),
 
-      themeMode: ThemeMode.light, 
-      home: const HomeUI(), 
+      themeMode: ThemeMode.system, 
+      home: const Onboarding(), 
     );
   }
 }
