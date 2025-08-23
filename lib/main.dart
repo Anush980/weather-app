@@ -1,27 +1,30 @@
 import 'package:flutter/material.dart';
+import 'home_screen.dart';
+import "theme/color_scheme.dart"; 
 
 void main() {
-  runApp(const HomeUI());
+  runApp(const MyApp());
 }
 
-class HomeUI extends StatefulWidget {
-  const HomeUI({super.key});
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
 
   @override
-  State<HomeUI> createState() => _HomeUIState();
+  State<MyApp> createState() => _MyAppState();
 }
 
-class _HomeUIState extends State<HomeUI> {
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text("Weather App"),
-          backgroundColor: const Color.fromARGB(255, 234, 76, 65),
-        ),
-        body: Center(child: const Text("hello weather")),
-      ),
+
+      debugShowCheckedModeBanner: false,
+
+      theme: ThemeData(colorScheme: lightColorScheme, useMaterial3: true),
+      darkTheme: ThemeData(colorScheme: darkColorScheme, useMaterial3: true),
+
+      themeMode: ThemeMode.light, 
+      home: const HomeUI(), 
     );
   }
 }
