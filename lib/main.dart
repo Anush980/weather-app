@@ -1,31 +1,35 @@
 import 'package:flutter/material.dart';
-import "theme/app_theme.dart"; 
+import 'package:provider/provider.dart';
+import "theme/app_theme.dart";
 import 'routes/app_routes.dart';
+import 'widgets/theme_provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    final themeProvider = Provider.of<ThemeProvider>(context);
 
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
 
       theme: ThemeData(colorScheme: lightColorScheme, useMaterial3: true),
       darkTheme: ThemeData(colorScheme: darkColorScheme, useMaterial3: true),
 
-      themeMode: ThemeMode.dark ,
+      themeMode: themeProvider.themeMode, 
+
       initialRoute: AppRoutes.onboarding,
-      routes: AppRoutes.routes
+      routes: AppRoutes.routes,
     );
   }
 }
