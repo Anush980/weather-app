@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:weather_app/screens/home/home_screen.dart';
 import 'package:weather_app/widgets/custom_button.dart';
 import 'package:weather_app/routes/app_routes.dart';
 

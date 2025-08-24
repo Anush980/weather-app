@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'theme_provider.dart';
 
 class ThemeToggleButton extends StatelessWidget {
-  const ThemeToggleButton({Key? key}) : super(key: key);
+  const ThemeToggleButton({super.key});
 
   @override
   Widget build(BuildContext context) {
