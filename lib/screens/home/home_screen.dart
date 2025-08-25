@@ -90,10 +90,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  
+
                   children: [
                     // Humidity
-                    Column( 
+                    Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Image.asset(
@@ -103,16 +103,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         SizedBox(height: 5),
                         Text(
-                          "81%", 
+                          "81%",
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Text(
-                          "Humidity", 
-                          style: TextStyle(fontSize: 12),
-                        ),
+                        Text("Humidity", style: TextStyle(fontSize: 12)),
                       ],
                     ),
 
@@ -123,16 +120,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         Image.asset('assets/wind.png', width: 35, height: 35),
                         SizedBox(height: 5),
                         Text(
-                          "18 km/h", 
+                          "18 km/h",
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Text(
-                          "Wind", 
-                          style: TextStyle(fontSize: 12),
-                        ),
+                        Text("Wind", style: TextStyle(fontSize: 12)),
                       ],
                     ),
 
@@ -147,22 +141,30 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         SizedBox(height: 5),
                         Text(
-                          "32.9°C", 
+                          "32.9°C",
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Text(
-                          "Max Temp", 
-                          style: TextStyle(fontSize: 12),
-                        ),
+                        Text("Max Temp", style: TextStyle(fontSize: 12)),
                       ],
                     ),
                   ],
                 ),
               ),
-              
+              SizedBox(height: 20,),
+              Container(
+                height: 100,
+                width: screenWidth*0.9,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
             ],
           ),
         ),

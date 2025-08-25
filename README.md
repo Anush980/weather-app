@@ -87,6 +87,6 @@ git checkout -b feature/awesome-feature
 ```
 3. Commit your changes
 ```bash
-git commit -m "Add awesome feature"
+git commit -m "Add awesome features"
 ```
 4. Push to your branch and open a PR
