@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:weather_app/widgets/theme_toggle.dart';
 import 'package:rive/rive.dart';
+import 'package:weather_app/service/api_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,15 +11,42 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
   bool isDarkMode = true;
-  @override
-  Widget build(BuildContext context) {
-    String location = "Damak";
-    String country = "Nepal";
-    double temperature = 32.6;
-    String description = "Mostly Cloudy";
-    double screenHeight = MediaQuery.of(context).size.height;
-    double screenWidth = MediaQuery.of(context).size.width;
+
+  final WeatherService weatherService = WeatherService();
+  Map<String, dynamic>? weatherData;
+
+    @override
+  void initState() {
+    super.initState();
+    fetchWeather("Biratnagar"); 
+  }
+
+  void fetchWeather(String city) async {
+    try {
+      final data = await weatherService.getWeather(city);
+      setState(() {
+        weatherData = data;
+      });
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
+
+@override
+Widget build(BuildContext context) {
+  double screenHeight = MediaQuery.of(context).size.height;
+  double screenWidth = MediaQuery.of(context).size.width;
+
+  String location = weatherData?["name"] ?? "Loading...";
+  String country = weatherData?["sys"]["country"] ?? "";
+  double temperature = weatherData?["main"]["temp"]?.toDouble() ?? 0.0;
+  String description = weatherData?["weather"][0]["description"] ?? "";
+  String humidity = "${weatherData?["main"]["humidity"] ?? "--"}%";
+  String wind = "${weatherData?["wind"]["speed"] ?? "--"} km/h";
+  String maxTemp = "${weatherData?["main"]["temp_max"] ?? "--"}°C";
+
 
     return Scaffold(
       body: SafeArea(
@@ -41,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           prefixIcon: Icon(Icons.search),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                         ),
                       ),
@@ -103,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         SizedBox(height: 5),
                         Text(
-                          "81%",
+                          humidity,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -120,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Image.asset('assets/wind.png', width: 35, height: 35),
                         SizedBox(height: 5),
                         Text(
-                          "18 km/h",
+                          wind,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -141,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         SizedBox(height: 5),
                         Text(
-                          "32.9°C",
+                          maxTemp,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
