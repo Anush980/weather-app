@@ -9,8 +9,6 @@ class WeatherService {
     final url = Uri.parse("$baseUrl?q=$city&appid=$apiKey&units=metric");
     final response = await http.get(url);
 
-    print("Status code: ${response.statusCode}");
-    print("Response: ${response.body}");
 
     if (response.statusCode == 200) {
       return json.decode(response.body);
