@@ -13,6 +13,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool isDarkMode = true;
   final WeatherService weatherService = WeatherService();
+  final TextEditingController _cityController = TextEditingController();
   Map<String, dynamic>? weatherData;
   List<dynamic>? forecastData;
 
@@ -65,6 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Expanded(
                       child: TextField(
+                        controller: _cityController,
                         decoration: InputDecoration(
                           hintText: "Search City",
                           hintStyle: TextStyle(
@@ -75,6 +77,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
+                        onSubmitted: (value) {
+                          if (value.isNotEmpty) {
+                            fetchWeather(value);
+                          }
+                        },
                       ),
                     ),
                     SizedBox(width: 15),

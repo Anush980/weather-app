@@ -30,4 +30,6 @@ class WeatherService {
       throw Exception("Failed to load Forecast: ${response.body}");
     }
   }
+  
 }
+
