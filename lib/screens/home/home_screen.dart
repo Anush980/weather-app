@@ -3,8 +3,8 @@ import 'package:weather_app/widgets/daily_forecast.dart';
 import 'package:weather_app/widgets/theme_toggle.dart';
 import 'package:weather_app/service/api_service.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:weather_app/service/getCurrentLocation.dart';
-
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,47 +26,61 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadWeatherForCurrentLocation();
   }
-void fetchWeather(String city) async {
-  try {
-    final data = await weatherService.getWeather(city);
-    final forecast = await weatherService.getForecast(city);
 
-    setState(() {
-      weatherData = data;
-      forecastData = forecast;
-      cityNotFound = false;
-    });
-  } catch (e) {
-    print(e);
+  // Fetch weather by city name
+  void fetchWeather(String city) async {
+    try {
+      final data = await weatherService.getWeather(city);
+      final forecast = await weatherService.getForecast(city);
 
-    setState(() {
-      cityNotFound = true;
-    });
-
-    // Show snackbar if city not found
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("City '$city' not found"),
-        backgroundColor: Colors.red,
-        duration: Duration(seconds: 3),
-      ),
-    );
-
-    // Reset red border after 5 seconds
-    Future.delayed(Duration(seconds: 5), () {
       setState(() {
+        weatherData = data;
+        forecastData = forecast;
         cityNotFound = false;
       });
-    });
-  }
-}
+    } catch (e) {
+      print(e);
+      setState(() {
+        cityNotFound = true;
+      });
 
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("City '$city' not found"),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
+        ),
+      );
+
+      Future.delayed(Duration(seconds: 5), () {
+        setState(() {
+          cityNotFound = false;
+        });
+      });
+    }
+  }
+
+  // Convert coordinates to city name
+  Future<String> getCityFromCoordinates(double lat, double lon) async {
+    try {
+      List<Placemark> placemark = await placemarkFromCoordinates(lat, lon);
+      if (placemark.isNotEmpty) {
+        return placemark.first.locality ??
+            placemark.first.subAdministrativeArea ??
+            "Unknown";
+      }
+    } catch (e) {
+      print("Error getting city name: $e");
+    }
+    return "Unknown";
+  }
+
+  // Load weather for current location
   void _loadWeatherForCurrentLocation() async {
     try {
       Position? position = await getDeviceLocation();
 
       if (position != null) {
-        // Device location available
         final data = await weatherService.getWeatherByLocation(
           position.latitude,
           position.longitude,
@@ -76,17 +90,22 @@ void fetchWeather(String city) async {
           position.longitude,
         );
 
+        // Get proper city name
+        String cityName =
+            await getCityFromCoordinates(position.latitude, position.longitude);
+
         setState(() {
           weatherData = data;
           forecastData = forecast;
           cityNotFound = false;
+          weatherData?["name"] = cityName; // override with proper city
         });
       } else {
-        fetchWeather("kathmandu");
+        fetchWeather("Kathmandu");
       }
     } catch (e) {
       print("Error getting location weather: $e");
-      fetchWeather("kathmandu"); // fallback default
+      fetchWeather("Kathmandu"); // fallback default
     }
   }
 
@@ -126,7 +145,6 @@ void fetchWeather(String city) async {
                           hintStyle: TextStyle(
                             color: Theme.of(context).hintColor,
                           ),
-                          // prefixIcon: Icon(Icons.search),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(
@@ -156,9 +174,7 @@ void fetchWeather(String city) async {
                           ),
                         ),
                         onSubmitted: (value) {
-                          if (value.isNotEmpty) {
-                            fetchWeather(value);
-                          }
+                          if (value.isNotEmpty) fetchWeather(value);
                         },
                       ),
                     ),
@@ -166,12 +182,9 @@ void fetchWeather(String city) async {
                       icon: Icon(Icons.search),
                       onPressed: () {
                         final city = _cityController.text;
-                        if (city.isNotEmpty) {
-                          fetchWeather(city);
-                        }
+                        if (city.isNotEmpty) fetchWeather(city);
                       },
                     ),
-
                     SizedBox(width: 15),
                     ThemeToggleButton(),
                   ],
@@ -196,8 +209,6 @@ void fetchWeather(String city) async {
                 description,
                 style: TextStyle(fontWeight: FontWeight.w300, fontSize: 13),
               ),
-
-              // Weather image
               SizedBox(
                 width: 200,
                 height: 200,
@@ -205,12 +216,11 @@ void fetchWeather(String city) async {
                   iconUrl,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
-                    return Icon(Icons.error, size: 50); // fallback icon
+                    return Icon(Icons.error, size: 50);
                   },
                 ),
               ),
-
-              // Weather details (humidity, wind, max temp)
+              // Weather details
               Container(
                 width: screenWidth * 0.9,
                 height: screenHeight * 0.15,
@@ -224,66 +234,36 @@ void fetchWeather(String city) async {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    // Humidity
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset(
-                          'assets/humidity.png',
-                          width: 35,
-                          height: 35,
-                        ),
+                        Image.asset('assets/humidity.png', width: 35, height: 35),
                         SizedBox(height: 5),
-                        Text(
-                          humidity,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        Text(humidity, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                         Text("Humidity", style: TextStyle(fontSize: 12)),
                       ],
                     ),
-                    // Wind
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Image.asset('assets/wind.png', width: 35, height: 35),
                         SizedBox(height: 5),
-                        Text(
-                          wind,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        Text(wind, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                         Text("Wind", style: TextStyle(fontSize: 12)),
                       ],
                     ),
-                    // Max Temp
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset(
-                          'assets/temperature1.png',
-                          width: 35,
-                          height: 35,
-                        ),
+                        Image.asset('assets/temperature1.png', width: 35, height: 35),
                         SizedBox(height: 5),
-                        Text(
-                          maxTemp,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        Text(maxTemp, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                         Text("Max Temp", style: TextStyle(fontSize: 12)),
                       ],
                     ),
                   ],
                 ),
               ),
-
               // Forecast header
               Padding(
                 padding: const EdgeInsets.all(20),
@@ -291,24 +271,11 @@ void fetchWeather(String city) async {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Today forecast",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      "Weekly Forecast",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
+                    Text("Today forecast", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                    Text("Weekly Forecast", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400)),
                   ],
                 ),
               ),
-
               SizedBox(
                 height: 110,
                 child: forecastData == null
@@ -319,15 +286,10 @@ void fetchWeather(String city) async {
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         itemBuilder: (context, index) {
                           final item = forecastData![index];
-                          final dt = DateTime.fromMillisecondsSinceEpoch(
-                            item["dt"] * 1000,
-                          );
-                          final temp = item["main"]["feels_like"]
-                              .toStringAsFixed(1);
+                          final dt = DateTime.fromMillisecondsSinceEpoch(item["dt"] * 1000);
+                          final temp = item["main"]["feels_like"].toStringAsFixed(1);
                           final hour = dt.hour;
-                          final timeString = hour > 12
-                              ? "${hour - 12} PM"
-                              : "$hour AM";
+                          final timeString = hour > 12 ? "${hour - 12} PM" : "$hour AM";
                           final iconCode = item["weather"][0]["icon"];
 
                           return daily_forecast(
