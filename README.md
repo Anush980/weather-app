@@ -19,7 +19,7 @@ This project is meant as a **starter scaffold** for learning Flutter while exper
 ## 📸 Preview
 
 <p align="center">
-   <img src="assets/preview/preview1.jpg" alt="App Preview" width="400">
+   <img src="assets/preview/preview1.jpg" alt="App Preview" width="200">
   
 
 </p>
