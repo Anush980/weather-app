@@ -47,8 +47,8 @@ class _HomeScreenState extends State<HomeScreen> {
     String humidity = "${weatherData?["main"]["humidity"] ?? "--"}%";
     String wind = "${weatherData?["wind"]["speed"] ?? "--"} km/h";
     String maxTemp = "${weatherData?["main"]["temp_max"] ?? "--"}°C";
-    String time = "12 PM";
-    String feelTemp = "32°C";
+    String iconCode = weatherData?["weather"][0]["icon"] ?? "01d";
+    String iconUrl = "https://openweathermap.org/img/wn/$iconCode@4x.png";
 
     return Scaffold(
       body: SafeArea(
@@ -106,7 +106,13 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(
                 width: 200,
                 height: 200,
-                child: Image.asset('assets/raining.png'),
+                child: Image.network(
+                  iconUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(Icons.error, size: 50); // fallback icon
+                  },
+                ),
               ),
 
               // Weather details (humidity, wind, max temp)
@@ -225,12 +231,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               .toStringAsFixed(1);
                           final hour = dt.hour;
                           final timeString = hour > 12
-                              ? "${hour - 12}PM"
+                              ? "${hour - 12} PM"
                               : "$hour AM";
+                          final iconCode = item["weather"][0]["icon"];
 
                           return daily_forecast(
                             time: timeString,
                             feelTemp: "$temp°C",
+                            iconCode: iconCode,
                           );
                         },
                       ),
