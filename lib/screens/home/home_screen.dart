@@ -14,6 +14,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isDarkMode = true;
   final WeatherService weatherService = WeatherService();
   Map<String, dynamic>? weatherData;
+  List<dynamic>? forecastData;
 
   @override
   void initState() {
@@ -24,8 +25,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void fetchWeather(String city) async {
     try {
       final data = await weatherService.getWeather(city);
+      final forecast = await weatherService.getForecast(city);
       setState(() {
         weatherData = data;
+        forecastData = forecast;
       });
     } catch (e) {
       print("Error: $e");
@@ -54,14 +57,19 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               // Search bar + theme toggle
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 16,
+                  horizontal: 18,
+                ),
                 child: Row(
                   children: [
                     Expanded(
                       child: TextField(
                         decoration: InputDecoration(
                           hintText: "Search City",
-                          hintStyle: TextStyle(color: Theme.of(context).hintColor),
+                          hintStyle: TextStyle(
+                            color: Theme.of(context).hintColor,
+                          ),
                           prefixIcon: Icon(Icons.search),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -74,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-SizedBox(height: 30,),
+              SizedBox(height: 30),
               // Location and temperature
               Text(
                 "$location, $country",
@@ -91,7 +99,7 @@ SizedBox(height: 30,),
               SizedBox(height: screenHeight * 0.01),
               Text(
                 description,
-                style: TextStyle(fontWeight: FontWeight.w300, fontSize: 13)
+                style: TextStyle(fontWeight: FontWeight.w300, fontSize: 13),
               ),
 
               // Weather image
@@ -119,9 +127,19 @@ SizedBox(height: 30,),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset('assets/humidity.png', width: 35, height: 35),
+                        Image.asset(
+                          'assets/humidity.png',
+                          width: 35,
+                          height: 35,
+                        ),
                         SizedBox(height: 5),
-                        Text(humidity, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                        Text(
+                          humidity,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         Text("Humidity", style: TextStyle(fontSize: 12)),
                       ],
                     ),
@@ -131,7 +149,13 @@ SizedBox(height: 30,),
                       children: [
                         Image.asset('assets/wind.png', width: 35, height: 35),
                         SizedBox(height: 5),
-                        Text(wind, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                        Text(
+                          wind,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         Text("Wind", style: TextStyle(fontSize: 12)),
                       ],
                     ),
@@ -139,9 +163,19 @@ SizedBox(height: 30,),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset('assets/temperature1.png', width: 35, height: 35),
+                        Image.asset(
+                          'assets/temperature1.png',
+                          width: 35,
+                          height: 35,
+                        ),
                         SizedBox(height: 5),
-                        Text(maxTemp, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                        Text(
+                          maxTemp,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         Text("Max Temp", style: TextStyle(fontSize: 12)),
                       ],
                     ),
@@ -156,31 +190,50 @@ SizedBox(height: 30,),
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Today forecast", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                    Text("Weekly Forecast", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400)),
+                    Text(
+                      "Today forecast",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      "Weekly Forecast",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                   ],
                 ),
               ),
 
-              
               SizedBox(
                 height: 110,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  children: [
-                    daily_forecast(time: time, feelTemp: feelTemp),
-                    daily_forecast(time: "1 PM", feelTemp: feelTemp),
-                    daily_forecast(time: "2 PM", feelTemp: feelTemp),
-                    daily_forecast(time: "3 PM", feelTemp: feelTemp),
-                    daily_forecast(time: "4 PM", feelTemp: feelTemp),
-                    daily_forecast(time: time, feelTemp: feelTemp),
-                    daily_forecast(time: "1 PM", feelTemp: feelTemp),
-                    daily_forecast(time: "2 PM", feelTemp: feelTemp),
-                    daily_forecast(time: "3 PM", feelTemp: feelTemp),
-                    daily_forecast(time: "4 PM", feelTemp: feelTemp),
-                  ],
-                ),
+                child: forecastData == null
+                    ? Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: forecastData!.length,
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        itemBuilder: (context, index) {
+                          final item = forecastData![index];
+                          final dt = DateTime.fromMillisecondsSinceEpoch(
+                            item["dt"] * 1000,
+                          );
+                          final temp = item["main"]["feels_like"]
+                              .toStringAsFixed(1);
+                          final hour = dt.hour;
+                          final timeString = hour > 12
+                              ? "${hour - 12}PM"
+                              : "$hour AM";
+
+                          return daily_forecast(
+                            time: timeString,
+                            feelTemp: "$temp°C",
+                          );
+                        },
+                      ),
               ),
             ],
           ),
