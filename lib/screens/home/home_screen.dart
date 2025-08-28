@@ -5,6 +5,7 @@ import 'package:weather_app/service/api_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:weather_app/service/getCurrentLocation.dart';
 
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
