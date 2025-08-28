@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:weather_app/widgets/daily_forecast.dart';
 import 'package:weather_app/widgets/theme_toggle.dart';
 import 'package:weather_app/service/api_service.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:weather_app/service/getCurrentLocation.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,9 +23,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    fetchWeather("Biratnagar");
+    _loadWeatherForCurrentLocation();
   }
-
 void fetchWeather(String city) async {
   try {
     final data = await weatherService.getWeather(city);
@@ -38,19 +39,19 @@ void fetchWeather(String city) async {
     print(e);
 
     setState(() {
-      cityNotFound = true; // border turns red
+      cityNotFound = true;
     });
 
-    // Show Snackbar
+    // Show snackbar if city not found
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text("City '$city' not found"),
-        backgroundColor: const Color.fromARGB(255, 241, 139, 6),
+        backgroundColor: Colors.red,
         duration: Duration(seconds: 3),
       ),
     );
 
-   
+    // Reset red border after 5 seconds
     Future.delayed(Duration(seconds: 5), () {
       setState(() {
         cityNotFound = false;
@@ -59,7 +60,34 @@ void fetchWeather(String city) async {
   }
 }
 
+  void _loadWeatherForCurrentLocation() async {
+    try {
+      Position? position = await getDeviceLocation();
 
+      if (position != null) {
+        // Device location available
+        final data = await weatherService.getWeatherByLocation(
+          position.latitude,
+          position.longitude,
+        );
+        final forecast = await weatherService.getForecastByLocation(
+          position.latitude,
+          position.longitude,
+        );
+
+        setState(() {
+          weatherData = data;
+          forecastData = forecast;
+          cityNotFound = false;
+        });
+      } else {
+        fetchWeather("kathmandu");
+      }
+    } catch (e) {
+      print("Error getting location weather: $e");
+      fetchWeather("kathmandu"); // fallback default
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,51 +118,58 @@ void fetchWeather(String city) async {
                 child: Row(
                   children: [
                     Expanded(
-  child: TextField(
-    controller: _cityController,
-    decoration: InputDecoration(
-      hintText: "Search City",
-      hintStyle: TextStyle(color: Theme.of(context).hintColor),
-      // prefixIcon: Icon(Icons.search),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(
-          color: cityNotFound ? Colors.red : Theme.of(context).colorScheme.primary,
-          width: 2,
-        ),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(
-          color: cityNotFound ? Colors.red : Theme.of(context).colorScheme.primary,
-          width: 2,
-        ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(
-          color: cityNotFound ? Colors.red : Theme.of(context).colorScheme.primary,
-          width: 2,
-        ),
-      ),
-    ),
-    onSubmitted: (value) {
-      if (value.isNotEmpty) {
-        fetchWeather(value);
-      }
-    },
-  ),
-),
-IconButton(
-  icon: Icon(Icons.search),
-  onPressed: () {
-    final city = _cityController.text;
-    if (city.isNotEmpty) {
-      fetchWeather(city);
-    }
-  },
-),
-
+                      child: TextField(
+                        controller: _cityController,
+                        decoration: InputDecoration(
+                          hintText: "Search City",
+                          hintStyle: TextStyle(
+                            color: Theme.of(context).hintColor,
+                          ),
+                          // prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(
+                              color: cityNotFound
+                                  ? Colors.red
+                                  : Theme.of(context).colorScheme.primary,
+                              width: 2,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(
+                              color: cityNotFound
+                                  ? Colors.red
+                                  : Theme.of(context).colorScheme.primary,
+                              width: 2,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(
+                              color: cityNotFound
+                                  ? Colors.red
+                                  : Theme.of(context).colorScheme.primary,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                        onSubmitted: (value) {
+                          if (value.isNotEmpty) {
+                            fetchWeather(value);
+                          }
+                        },
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.search),
+                      onPressed: () {
+                        final city = _cityController.text;
+                        if (city.isNotEmpty) {
+                          fetchWeather(city);
+                        }
+                      },
+                    ),
 
                     SizedBox(width: 15),
                     ThemeToggleButton(),
