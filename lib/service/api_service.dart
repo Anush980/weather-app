@@ -12,7 +12,12 @@ class WeatherService {
 
     if (response.statusCode == 200) {
       return json.decode(response.body);
-    } else {
+    }
+    else if (response.statusCode == 404) {
+    // City not found
+    throw Exception("City not found");
+  }
+   else {
       throw Exception("Failed to load weather: ${response.body}");
     }
   }
@@ -26,7 +31,12 @@ class WeatherService {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       return data["list"];
-    } else {
+    } 
+    else if (response.statusCode == 404) {
+    // City not found
+    throw Exception("City not found");
+  }
+  else {
       throw Exception("Failed to load Forecast: ${response.body}");
     }
   }

@@ -14,6 +14,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isDarkMode = true;
   final WeatherService weatherService = WeatherService();
   final TextEditingController _cityController = TextEditingController();
+  bool cityNotFound = false;
   Map<String, dynamic>? weatherData;
   List<dynamic>? forecastData;
 
@@ -23,18 +24,42 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchWeather("Biratnagar");
   }
 
-  void fetchWeather(String city) async {
-    try {
-      final data = await weatherService.getWeather(city);
-      final forecast = await weatherService.getForecast(city);
+void fetchWeather(String city) async {
+  try {
+    final data = await weatherService.getWeather(city);
+    final forecast = await weatherService.getForecast(city);
+
+    setState(() {
+      weatherData = data;
+      forecastData = forecast;
+      cityNotFound = false;
+    });
+  } catch (e) {
+    print(e);
+
+    setState(() {
+      cityNotFound = true; // border turns red
+    });
+
+    // Show Snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("City '$city' not found"),
+        backgroundColor: const Color.fromARGB(255, 241, 139, 6),
+        duration: Duration(seconds: 3),
+      ),
+    );
+
+   
+    Future.delayed(Duration(seconds: 5), () {
       setState(() {
-        weatherData = data;
-        forecastData = forecast;
+        cityNotFound = false;
       });
-    } catch (e) {
-      print("Error: $e");
-    }
+    });
   }
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -65,25 +90,52 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: TextField(
-                        controller: _cityController,
-                        decoration: InputDecoration(
-                          hintText: "Search City",
-                          hintStyle: TextStyle(
-                            color: Theme.of(context).hintColor,
-                          ),
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        onSubmitted: (value) {
-                          if (value.isNotEmpty) {
-                            fetchWeather(value);
-                          }
-                        },
-                      ),
-                    ),
+  child: TextField(
+    controller: _cityController,
+    decoration: InputDecoration(
+      hintText: "Search City",
+      hintStyle: TextStyle(color: Theme.of(context).hintColor),
+      // prefixIcon: Icon(Icons.search),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(
+          color: cityNotFound ? Colors.red : Theme.of(context).colorScheme.primary,
+          width: 2,
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(
+          color: cityNotFound ? Colors.red : Theme.of(context).colorScheme.primary,
+          width: 2,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(
+          color: cityNotFound ? Colors.red : Theme.of(context).colorScheme.primary,
+          width: 2,
+        ),
+      ),
+    ),
+    onSubmitted: (value) {
+      if (value.isNotEmpty) {
+        fetchWeather(value);
+      }
+    },
+  ),
+),
+IconButton(
+  icon: Icon(Icons.search),
+  onPressed: () {
+    final city = _cityController.text;
+    if (city.isNotEmpty) {
+      fetchWeather(city);
+    }
+  },
+),
+
+
                     SizedBox(width: 15),
                     ThemeToggleButton(),
                   ],
